@@ -1,4 +1,8 @@
-# Advanced Database Portfolio
+- Name: Erhiyoma Oghenewwogaga
+- Matric No: 301932013
+- Student Email: o.erhiyoma32013@miva.edu.ng
+- GitHub: Ogaga2026
+- # Advanced Database Portfolio
 
 This repository contains 3 portfolios for Advanced Database course.
 
