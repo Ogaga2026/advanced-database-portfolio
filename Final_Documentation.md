@@ -1,7 +1,7 @@
 # MIT 8103 Final Documentation (6 Marks)
 
-**Student:** Ojpgaja2026
-**GitHub:** https://github.com/Ojpgaja2026/advanced-database-portfolio
+**Student:** Ogagaja2026
+**GitHub:** https://github.com/Ogaga2026/advanced-database-portfolio
 **Course:** MIT 8103 Advanced Database Systems - September Cohort
 **Case Study:** NaijaCart E-commerce Platform (Nigeria)
 
@@ -17,7 +17,7 @@ This portfolio implements complete advanced database concepts using ONE case stu
 All work shows progressive commits with meaningful messages.
 
 ## 2. GitHub Structure & Evidence
-Link: https://github.com/Ojpgaja2026/advanced-database-portfolio
+Link: https://github.com/Ogaga2026/advanced-database-portfolio
 
 Folders:
 - portfolio-1-database-design/
