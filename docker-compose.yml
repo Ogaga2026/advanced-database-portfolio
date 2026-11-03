@@ -1,0 +1,40 @@
+version: '3.8'
+services:
+  mysql_naijacart:
+    image: mysql:8.0
+    container_name: mysql_naijacart
+    environment:
+      MYSQL_ROOT_PASSWORD: ogaga2026
+      MYSQL_DATABASE: naijacart
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - naijacart_network
+  mongodb_naijacart:
+    image: mongo:6.0
+    container_name: mongodb_naijacart
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - naijacart_network
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin_naijacart
+    environment:
+      PMA_HOST: mysql_naijacart
+      MYSQL_ROOT_PASSWORD: ogaga2026
+    ports:
+      - "8080:80"
+    networks:
+      - naijacart_network
+volumes:
+  mysql_data:
+  mongo_data:
+networks:
+  naijacart_network:
+    driver: bridge
+    name: naijacart_network
