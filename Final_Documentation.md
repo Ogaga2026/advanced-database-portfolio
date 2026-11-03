@@ -1,6 +1,6 @@
 # MIT 8103 Final Documentation (6 Marks)
 
-**Student:** Ogaga2026
+**Student:** Erhiyoma Oghenevwogaga
 **GitHub:** https://github.com/Ogaga2026/advanced-database-portfolio
 **Course:** MIT 8103 Advanced Database Systems - September Cohort
 **Case Study:** NaijaCart E-commerce Platform (Nigeria)
