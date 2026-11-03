@@ -1,7 +1,7 @@
 # MIT 8103 Advanced Database Systems (40 Marks) - Individual Practical Database Portfolio
-**Student:** Ojpgaja2026
+**Student:** Erhiyoma Oghenevwogaga
 **Case Study:** NaijaCart E-Commerce Platform - A Nigerian online shopping platform for electronics, fashion & groceries
-**GitHub Link:** https://github.com/Ojpgaja2026/advanced-database-portfolio
+**GitHub Link:** https://github.com/Ogaga2026/advanced-database-portfolio
 **Course:** MIT 8103 - September Cohort
 
 ## Overview
