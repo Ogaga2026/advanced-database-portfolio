@@ -19,7 +19,35 @@ DECLARE
     v_price NUMERIC(10,2);
     v_total NUMERIC(10,2);
     v_order_id INT;
+    v_customer_exists INT;
+    v_warehouse_exists INT;
 BEGIN
+    -- 1. INPUT VALIDATION - reject bad input before any lock / insert
+    IF p_customer_id IS NULL THEN
+        RAISE EXCEPTION 'customer_id cannot be NULL';
+    END IF;
+    IF p_product_id IS NULL THEN
+        RAISE EXCEPTION 'product_id cannot be NULL';
+    END IF;
+    IF p_warehouse_id IS NULL THEN
+        RAISE EXCEPTION 'warehouse_id cannot be NULL';
+    END IF;
+    IF p_quantity IS NULL OR p_quantity <= 0 THEN
+        RAISE EXCEPTION 'Quantity must be greater than 0. Got: %', p_quantity;
+    END IF;
+
+    -- 2. Check customer exists
+    SELECT COUNT(*) INTO v_customer_exists FROM customers WHERE customer_id = p_customer_id;
+    IF v_customer_exists = 0 THEN
+        RAISE EXCEPTION 'Customer % not found', p_customer_id;
+    END IF;
+
+    -- 3. Check warehouse exists
+    SELECT COUNT(*) INTO v_warehouse_exists FROM warehouses WHERE warehouse_id = p_warehouse_id;
+    IF v_warehouse_exists = 0 THEN
+        RAISE EXCEPTION 'Warehouse % not found', p_warehouse_id;
+    END IF;
+
     -- Lock product row to prevent concurrent overselling
     SELECT stock_quantity, price INTO v_stock, v_price
     FROM products
@@ -64,26 +92,23 @@ $$ LANGUAGE plpgsql;
 -- How to use it:
 -- SELECT place_order(1, 1, 2, 1);
 -- This will create an order for customer 1, product 1, qty 2, warehouse 1
--- If stock is not enough, it will fail and NOT create order, NOT reduce stock
+-- If stock is not enough, it will fail and NOT create order, NOT reduce stock.
 
--- Example: Test concurrency
--- Open 2 sessions at same time and run:
--- Session 1: BEGIN; SELECT place_order(1, 1, 90, 1); -- will lock product 1
--- Session 2: BEGIN; SELECT place_order(2, 1, 90, 1); -- will WAIT until Session 1 commits/rolls back
--- Session 1: COMMIT;
--- Session 2 will then see updated stock and fail if not enough - no overselling
+-- Example Test (concurrent)
+-- Open 2 terminals at same time and run:
+-- Session 1: SELECT place_order(1, 1, 10, 1); -- will lock product 1
+-- Session 2: SELECT place_order(2, 1, 10, 1); -- will wait, then fail if stock < 20
 
--- Example: Isolation levels in Postgres
--- BEGIN ISOLATION LEVEL READ COMMITTED;
--- SELECT * FROM products WHERE product_id = 1;
--- COMMIT;
+-- Example Test (validation)
+-- SELECT place_order(1, 1, 0, 1);  -- fails: Quantity must be greater than 0
+-- SELECT place_order(1, 1, -5, 1); -- fails: Quantity must be greater than 0
+-- SELECT place_order(999, 1, 1, 1); -- fails: Customer 999 not found
+-- SELECT place_order(1, 1, 1, 999); -- fails: Warehouse 999 not found
 
--- BEGIN ISOLATION LEVEL REPEATABLE READ;
--- SELECT * FROM products WHERE product_id = 1;
--- COMMIT;
-
--- Deadlock explanation:
--- If Session A locks product 1 then tries product 2,
--- and Session B locks product 2 then tries product 1,
--- Postgres will detect deadlock and abort one transaction.
--- Solution: Always lock products in same order (ORDER BY product_id).
+-- Reset sequences for clean re-run (use after TRUNCATE in testing only)
+-- SELECT setval('customers_customer_id_seq', 1, false);
+-- SELECT setval('products_product_id_seq', 1, false);
+-- SELECT setval('orders_order_id_seq', 1, false);
+-- SELECT setval('order_items_order_item_id_seq', 1, false);
+-- SELECT setval('payments_payment_id_seq', 1, false);
+-- SELECT setval('warehouses_warehouse_id_seq', 1, false);
