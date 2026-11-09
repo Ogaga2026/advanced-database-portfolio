@@ -1,4 +1,4 @@
-# Portfolio 5 - Distributed & Cloud - NaijaCart - Erhiyoma Oghenevogaga
+# Portfolio 5 - Distributed & Cloud - NaijaCart - Erhiyoma Oghenevwogaga
 
 ## 1. Why Distributed?
 One server = single point of failure.
