@@ -1,4 +1,4 @@
-# Portfolio 4 - NoSQL Implementation - NaijaCart - Erhiyoma Oghenevogaga
+# Portfolio 4 - NoSQL Implementation - NaijaCart - Erhiyoma Oghenevwogaga
 
 ## Why MongoDB for NaijaCart?
 
