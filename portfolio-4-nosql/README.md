@@ -1,8 +1,8 @@
-# Portfolio 4 - NoSQL Implementation - NaijaCart - Erhiyome Oghenevogaga
+# Portfolio 4 - NoSQL Implementation - NaijaCart - Erhiyoma Oghenevogaga
 
 ## Why MongoDB for NaijaCart?
 
-### 1. SQL (MySQL) is for:
+### 1. SQL (Postgres) is for:
 - Transactions (orders, payments) - ACID compliance
 - Structured data with relationships
 - Inventory control with FOR UPDATE locking
@@ -19,7 +19,9 @@
 ```json
 {
   "_id": 1,
-  "full_name": "Tunde Lagos",
-  "city": "Lagos",
-  "total_orders": 5
+  "full_name": "Tunde Okonkwo",
+  "email": "tunde.okonkwo@gmail.com",
+  "city": "Ikeja",
+  "state": "Lagos",
+  "total_orders": 2
 }
