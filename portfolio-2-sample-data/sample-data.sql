@@ -6,8 +6,8 @@
 -- Prices must match Portfolio 4 MongoDB. Laptop Stand = 25000 in BOTH systems.
 
 INSERT INTO warehouses (warehouse_id, name, city, state, capacity) VALUES
-(1, 'Lagos Main', 'Lagos', 'Lagos', 10000),
-(2, 'Abuja Hub', 'Abuja', 'FCT', 5000);
+(1, 'Lagos Main', 'Lagos', 'Lagos', 100000),
+(2, 'Abuja Hub', 'Abuja', 'FCT', 50000);
 
 INSERT INTO customers (customer_id, full_name, email, phone, city, state, created_at) VALUES
 (1, 'Erhiyoma Oghenevwogaga', 'erhiyoma@test.com', '08030000000', 'Lagos', 'Lagos', '2026-01-01'),
@@ -27,8 +27,8 @@ INSERT INTO order_items (order_item_id, order_id, product_id, quantity, unit_pri
 (2, 2, 3, 1, 45000);
 
 INSERT INTO payments (payment_id, order_id, payment_date, amount, payment_method, status) VALUES
-(1, 1, '2026-11-09', 25000, 'Transfer', 'success'),
-(2, 2, '2026-11-09', 45000, 'Card', 'success');
+(1, 1, '2026-11-09', 25000, 'transfer', 'success'),
+(2, 2, '2026-11-09', 45000, 'card', 'success');
 
 -- ========== INDEXES ==========
 CREATE INDEX idx_orders_customer ON orders(customer_id);
@@ -38,9 +38,9 @@ CREATE INDEX idx_order_items_product ON order_items(product_id);
 CREATE INDEX idx_payments_order ON payments(order_id);
 CREATE INDEX idx_products_warehouse ON products(warehouse_id);
 
--- ========== OPTIMISATION EVIDENCE - NOT COMMENTED OUT ==========
+-- ========== OPTIMISATION EVIDENCE ==========
 -- Run these 2 queries in Postgres and paste the real output below.
--- Do NOT claim 250ms to 18ms without running it.
+-- Do NOT claim 250ms to 10ms without running it.
 
 -- BEFORE INDEX (drop index, run EXPLAIN ANALYZE, then re-create index):
 EXPLAIN ANALYZE SELECT * FROM orders WHERE customer_id = 1;
@@ -49,15 +49,15 @@ EXPLAIN ANALYZE SELECT * FROM orders WHERE customer_id = 1;
 EXPLAIN ANALYZE SELECT * FROM orders WHERE customer_id = 1;
 
 -- Saved execution plan example (paste your REAL output here, replace this):
--- Seq Scan on orders (cost=0.00..15.00 rows=1) - BEFORE index
--- Index Scan using idx_orders_customer on orders (cost=0.00..8.00 rows=1) - AFTER index
+-- BEFORE index: Seq Scan on orders (cost=0.00..15.00 rows=1)
+-- AFTER index: Index Scan using idx_orders_customer on orders
 -- Result: Index Scan is used, no Seq Scan. Actual timing depends on your machine, report what Postgres shows.
 
 -- ========== WAREHOUSE SALES - CORRECT VERSION ==========
 -- MUST use orders.warehouse_id (fulfilment warehouse)
--- MUST NOT use products.warehouse_id - that would misstate sales
--- Example: Order 1 product is in Lagos warehouse (products.warehouse_id=1)
--- but order was fulfilled from Abuja (orders.warehouse_id=2).
+-- MUST NOT use products.warehouse_id
+-- Example: Order 1 product is in Lagos warehouse (products.warehouse_id = 1)
+-- But order was fulfilled from Abuja (orders.warehouse_id = 2)
 -- Correct sales must credit Abuja, not Lagos.
 
 SELECT w.name AS warehouse_name, SUM(o.total_amount) AS total_sales
@@ -66,9 +66,9 @@ JOIN warehouses w ON o.warehouse_id = w.warehouse_id
 GROUP BY w.name;
 
 -- WRONG VERSION - DO NOT USE:
--- SELECT w.name, SUM(o.total_amount) FROM orders o
+-- This is wrong because it credits product warehouse, not fulfilment warehouse.
+-- SELECT w.name, SUM(oi.quantity * oi.unit_price) FROM orders o
 -- JOIN order_items oi ON o.order_id = oi.order_id
 -- JOIN products p ON oi.product_id = p.product_id
 -- JOIN warehouses w ON p.warehouse_id = w.warehouse_id
 -- GROUP BY w.name;
--- This is wrong because it credits product warehouse, not fulfilment warehouse.
