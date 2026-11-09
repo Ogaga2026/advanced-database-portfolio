@@ -1,16 +1,27 @@
-# Portfolio 5 - Distributed & Cloud - NaijaCart - Erhiyoma Oghenevwogaga
+# Portfolio 5 - Distributed & Cloud - NaijaCart
+MIT 8103 - Erhiyoma Oghenevwogaga - Ogaga2026
 
-## 1. Why Distributed?
-One server = single point of failure.
-If Lagos server dies on Black Friday, NaijaCart must NOT go down.
-Solution: Replication for availability + Sharding for scalability + Cloud for management.
+## IMPORTANT - Read This First
 
-## 2. Replication - High Availability
-Replica Set: `naijacartRS`
-- **Primary:** `lagos-primary:27017` (priority: 2) - handles all writes
-- **Secondary:** `abuja-replica:27017` (priority: 1) - copies data, can become Primary
-- **Hidden Backup:** `portharcourt-backup:27017` (priority: 0, hidden) - backup only, never becomes Primary
+This section is a PROPOSED architecture, NOT tested with 3-node replica set in this repo.
 
-```js
-rs.initiate(config);
-rs.status();
+Docker Compose in this repo runs 1 MongoDB instance (mongo:6) for development. It does NOT run 3 replica members.
+
+Full 3-node replica + sharding infrastructure is NOT configured in docker-compose.yml in this repo. This is design proposal for production.
+
+## Proposed Replica Set
+
+Name: `naijacartRS`
+
+- Lagos - Primary - handles writes
+- Abuja - Secondary - handles reads, takes over if Lagos down
+- Port Harcourt - Hidden Backup - for backup only, no reads
+
+If Lagos down, Abuja becomes Primary automatically. No data loss because writeConcern is majority.
+
+## Proposed Sharding
+
+Shard key for products:
+
+```javascript
+sh.shardCollection("naijacart.products", { category: 1, warehouse_id: 1 })
