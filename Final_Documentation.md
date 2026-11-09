@@ -1,5 +1,5 @@
 # Final Documentation - Advanced Database Portfolio - MIT 8103
-Student: Erhiyoma Oghenevogaga | Matric: Ogaga2026 | GitHub: https://github.com/Ogaga2026/advanced-database-portfolio
+Student: Erhiyoma Oghenevwogaga | Matric: Ogaga2026 | GitHub: https://github.com/Ogaga2026/advanced-database-portfolio
 Case Study: NaijaCart E-Commerce Platform - Nigerian Online Shopping for Lagos Flash Sales
 
 ## Overview
@@ -51,4 +51,4 @@ NaijaCart uses BOTH databases because one database cannot do everything:
 - MongoDB = speed + flexibility for catalog
 - Distributed = availability + scalability for Black Friday in Nigeria
 
-Name: Erhiyoma Oghenevogaga Matric: Ogaga2026
+Name: Erhiyoma Oghenevwogaga Matric: Ogaga2026
