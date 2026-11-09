@@ -1,17 +1,16 @@
-## 3. Implementation Details
-- `rs.initiate()` - Setup replication
-- `sh.enableSharding()` and `sh.shardCollection()` - Sharding for 5M+ products
-- `writeConcern: {w: "majority"}` - Ensures data written to majority
-- `readPref: secondaryPreferred` - Scale reads to Abuja replica
-- `insertMany` with majority write
+# Portfolio 5 - Distributed & Cloud - NaijaCart - Erhiyoma Oghenevogaga
 
-## 4. Cloud Benefits for NaijaCart
-- High Availability: Lagos down -> Abuja takes over
-- Scalability: Sharding handles Black Friday 10k users
-- Fault Tolerance: Hidden backup in Port Harcourt
-- Low Latency: Read from nearest secondary
+## 1. Why Distributed?
+One server = single point of failure.
+If Lagos server dies on Black Friday, NaijaCart must NOT go down.
+Solution: Replication for availability + Sharding for scalability + Cloud for management.
 
-## 5. Deployment
-docker-compose up -d -- Includes MongoDB replica set
+## 2. Replication - High Availability
+Replica Set: `naijacartRS`
+- **Primary:** `lagos-primary:27017` (priority: 2) - handles all writes
+- **Secondary:** `abuja-replica:27017` (priority: 1) - copies data, can become Primary
+- **Hidden Backup:** `portharcourt-backup:27017` (priority: 0, hidden) - backup only, never becomes Primary
 
-Name: Erhiyome Oghenevogaga Matric: Ogaga2026
+```js
+rs.initiate(config);
+rs.status();
