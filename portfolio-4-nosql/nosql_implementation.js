@@ -1,66 +1,79 @@
-// Portfolio 4 - MongoDB NoSQL - Erhiyome Oghenevogaga - Ogaga2026
-// MIT 8103 Advanced Database Systems - NaijaCart
+// Portfolio 4 - NoSQL Implementation
+// NaijaCart - MongoDB - Matches Portfolio 1 data
+// Use: mongosh naijacart_nosql < nosql_implementation.js
+// OR copy-paste inside mongosh
 
-// Switch to NaijaCart database
-use('naijacart_nosql');
+// Switch to NoSQL database
+// use naijacart_nosql;
 
-// 1. Drop existing collections
+// Drop existing collections for clean run
 db.customers.drop();
 db.products.drop();
 db.orders.drop();
 
-// 2. insertMany - REQUIRED FOR 7 MARKS (Checker looks for this)
+// 1. Customers - flexible document, matches Portfolio 1 customers
 db.customers.insertMany([
-  { _id: 1, full_name: "Tunde Lagos", email: "tunde@gmail.com", city: "Lagos", state: "Lagos", phone: "08012345678", total_orders: 5 },
-  { _id: 2, full_name: "Chioma Abuja", email: "chioma@yahoo.com", city: "Abuja", state: "FCT", phone: "08087654321", total_orders: 12 },
-  { _id: 3, full_name: "Emeka Port Harcourt", email: "emeka@gmail.com", city: "Port Harcourt", state: "Rivers", phone: "07011223344", total_orders: 3 }
+  { _id: 1, full_name: "Tunde Okonkwo", email: "tunde.okonkwo@gmail.com", phone: "08030000001", city: "Ikeja", state: "Lagos", total_orders: 2 },
+  { _id: 2, full_name: "Amaka Johnson", email: "amaka.johnson@gmail.com", phone: "08030000002", city: "Lekki", state: "Lagos", total_orders: 2 },
+  { _id: 3, full_name: "Emeka Obi", email: "emeka.obi@gmail.com", phone: "08030000003", city: "Ikeja", state: "Lagos", total_orders: 1 }
 ]);
 
+// 2. Products - BEST USE CASE for NoSQL
+// Why? Ankara get different sizes, iPhone get storage variants.
+// In SQL, this go need many tables. In Mongo, we just add flexible field.
 db.products.insertMany([
-  { _id: 101, name: "iPhone 15 Pro Max", category: "Electronics", price_ngn: 1500000, stock: 15, warehouse: "Lagos Main" },
-  { _id: 102, name: "Ankara Gown", category: "Fashion", price_ngn: 45000, stock: 50, warehouse: "Lagos Main" },
-  { _id: 103, name: "Jollof Rice Pack", category: "Food", price_ngn: 5000, stock: 200, warehouse: "Abuja Hub" }
+  { _id: 1, name: "Ankara Fabric", category: "Fashion", price: 15000, stock_quantity: 100, warehouse: "Lagos Main", attributes: { sizes: ["2 yards", "4 yards", "6 yards"], colours: ["Red", "Blue", "Yellow"] } },
+  { _id: 2, name: "Laptop Stand", category: "Electronics", price: 25000, stock_quantity: 50, warehouse: "Lagos Main", attributes: { material: "Aluminium", adjustable: true } },
+  { _id: 3, name: "Wireless Mouse", category: "Electronics", price: 12000, stock_quantity: 200, warehouse: "Lagos Main", attributes: { wireless: true, battery: "AA" } },
+  { _id: 4, name: "Bag of Rice 50kg", category: "Groceries", price: 85000, stock_quantity: 80, warehouse: "Abuja Hub", attributes: { weight_kg: 50, brand: "Mama Gold" } }
 ]);
 
+// 3. Orders - Embedded items, no JOIN needed. Fast read for 1 order.
 db.orders.insertMany([
-  { _id: 1001, customer_id: 1, total_ngn: 1500000, status: "paid", payment_method: "paystack", items: [{ product_id: 101, qty: 1 }], created_at: new Date() },
-  { _id: 1002, customer_id: 2, total_ngn: 90000, status: "delivered", payment_method: "flutterwave", items: [{ product_id: 102, qty: 2 }], created_at: new Date() }
+  { _id: 1, customer_id: 1, total_amount: 27000, status: "completed", payment_method: "card", items: [{ product_id: 1, qty: 1, unit_price: 15000 }, { product_id: 3, qty: 1, unit_price: 12000 }], created_at: new Date() },
+  { _id: 2, customer_id: 2, total_amount: 35000, status: "completed", payment_method: "transfer", items: [{ product_id: 2, qty: 1, unit_price: 35000 }], created_at: new Date() }
 ]);
 
-// 3. Find queries
-db.customers.find({ city: "Lagos" });
-db.products.find({ price_ngn: { $gt: 100000 } });
-
-// 4. Aggregation - Top spending customers (REQUIRED)
-db.orders.aggregate([
-  { $group: { _id: "$customer_id", total_spent: { $sum: "$total_ngn" } } },
-  { $sort: { total_spent: -1 } },
-  { $limit: 3 }
-]);
-
-// 5. Aggregation - Products by category
-db.products.aggregate([
-  { $group: { _id: "$category", count: { $sum: 1 }, avg_price: { $avg: "$price_ngn" } } }
-]);
-
-// 6. Indexing for performance
+// 4. Indexes - for fast queries
 db.customers.createIndex({ email: 1 }, { unique: true });
 db.products.createIndex({ category: 1 });
+db.products.createIndex({ name: "text" });
 db.orders.createIndex({ customer_id: 1 });
 
-// 7. Join-like lookup (SQL JOIN alternative)
-db.orders.aggregate([
-  {
-    $lookup: {
-      from: "customers",
-      localField: "customer_id",
-      foreignField: "_id",
-      as: "customer_info"
-    }
-  },
-  { $unwind: "$customer_info" },
-  { $project: { _id: 1, total_ngn: 1, "customer_info.full_name": 1, "customer_info.city": 1 } }
-]);
+// 5. Queries
 
-// 8. Update with $inc
-db.products.updateOne({ _id: 101 }, { $inc: { stock: -1 } });
+// Q1: Find all Fashion products
+// db.products.find({ category: "Fashion" });
+
+// Q2: Find low stock products
+// db.products.find({ stock_quantity: { $lt: 50 } });
+
+// Q3: Find orders for customer 1
+// db.orders.find({ customer_id: 1 });
+
+// Q4: Aggregation - Total sales per category
+// db.orders.aggregate([
+//   { $unwind: "$items" },
+//   { $group: { _id: "$status", total_sales: { $sum: "$total_amount" }, count: { $sum: 1 } } }
+// ]);
+
+// Q5: Aggregation - Most popular product
+// db.orders.aggregate([
+//   { $unwind: "$items" },
+//   { $group: { _id: "$items.product_id", total_qty: { $sum: "$items.qty" } } },
+//   { $sort: { total_qty: -1 } },
+//   { $limit: 5 }
+// ]);
+
+// WHY HYBRID? - This is the main answer for Portfolio 4
+// SQL (Postgres from Portfolio 1) is for:
+// - Transactions (orders, payments) - ACID compliance
+// - Structured data with relationships
+// - Inventory control with FOR UPDATE locking
+//
+// NoSQL (MongoDB here) is for:
+// - Flexible product catalog (Ankara get different sizes, iPhone get storage variants)
+// - Customer behaviour tracking (Lagos customers browse differently)
+// - Fast reads for product recommendations
+//
+// Conclusion: NaijaCart uses BOTH. SQL for money, NoSQL for flexible catalog.
