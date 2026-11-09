@@ -1,72 +1,89 @@
--- Portfolio 3 - Transactions - Erhiyome Oghenevogaga - Ogaga2026
--- MIT 8103 Advanced Database Systems
+-- Portfolio 3 - Transaction Management
+-- NaijaCart - Postgres version
+-- Matches Portfolio 1 schema
 
-USE naijacart;
+-- Set isolation level for high concurrency (avoid dirty reads)
+-- In Postgres, default is READ COMMITTED, we keep it explicit per transaction
 
--- Set isolation level for NaijaCart high concurrency (Lagos flash sales)
-SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+-- Stored function to place order with concurrency control
+-- Uses row-level lock (FOR UPDATE) to prevent overselling when 2 users buy same product
 
--- Stored procedure to place order with concurrency control
-DELIMITER //
-
-CREATE PROCEDURE sp_place_order(
-    IN p_customer_id INT, 
-    IN p_product_id INT, 
-    IN p_qty INT
-)
+CREATE OR REPLACE FUNCTION place_order(
+    p_customer_id INT,
+    p_product_id INT,
+    p_quantity INT,
+    p_warehouse_id INT
+) RETURNS INT AS $$
+DECLARE
+    v_stock INT;
+    v_price NUMERIC(10,2);
+    v_total NUMERIC(10,2);
+    v_order_id INT;
 BEGIN
-    -- Error handler with ROLLBACK (REQUIRED FOR 7 MARKS)
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION
-    BEGIN
-        ROLLBACK;
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Transaction rolled back - insufficient stock or error';
-    END;
+    -- Lock product row to prevent concurrent overselling
+    SELECT stock_quantity, price INTO v_stock, v_price
+    FROM products
+    WHERE product_id = p_product_id
+    FOR UPDATE;
 
-    START TRANSACTION;
+    -- Check if product exists
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Product % not found', p_product_id;
+    END IF;
 
-        -- Lock product row to prevent overselling (FOR UPDATE REQUIRED)
-        SELECT stock_quantity, price_ngn INTO @stock, @price 
-        FROM products 
-        WHERE product_id = p_product_id 
-        FOR UPDATE;
+    -- Check stock
+    IF v_stock < p_quantity THEN
+        RAISE EXCEPTION 'Insufficient stock for product %. Available: %, Requested: %', p_product_id, v_stock, p_quantity;
+    END IF;
 
-        -- Check stock
-        IF @stock < p_qty THEN
-            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Insufficient stock';
-        END IF;
+    v_total := v_price * p_quantity;
 
-        -- Create order
-        INSERT INTO orders(customer_id, total_ngn, status) 
-        VALUES (p_customer_id, @price * p_qty, 'paid');
-        SET @last_order_id = LAST_INSERT_ID();
+    -- Create order
+    INSERT INTO orders (customer_id, warehouse_id, status, total_amount)
+    VALUES (p_customer_id, p_warehouse_id, 'pending', v_total)
+    RETURNING order_id INTO v_order_id;
 
-        -- Add item
-        INSERT INTO order_items(order_id, product_id, quantity, unit_price_ngn) 
-        VALUES (@last_order_id, p_product_id, p_qty, @price);
+    -- Create order item
+    INSERT INTO order_items (order_id, product_id, quantity, unit_price)
+    VALUES (v_order_id, p_product_id, p_quantity, v_price);
 
-        -- Update stock
-        UPDATE products 
-        SET stock_quantity = stock_quantity - p_qty 
-        WHERE product_id = p_product_id;
+    -- Reduce stock
+    UPDATE products
+    SET stock_quantity = stock_quantity - p_quantity
+    WHERE product_id = p_product_id;
 
-        -- Payment (Paystack)
-        INSERT INTO payments(order_id, method, amount_ngn, status) 
-        VALUES (@last_order_id, 'paystack', @price * p_qty, 'success');
+    -- If we reach here, transaction succeeds
+    RETURN v_order_id;
 
-        -- Inventory log
-        INSERT INTO inventory_log(product_id, change_qty, reason) 
-        VALUES (p_product_id, -p_qty, 'Order placed');
+EXCEPTION WHEN OTHERS THEN
+    -- Postgres auto-rolls back on exception in function
+    RAISE EXCEPTION 'Transaction failed - rolled back: %', SQLERRM;
+END;
+$$ LANGUAGE plpgsql;
 
-    COMMIT;
-END //
+-- How to use it:
+-- SELECT place_order(1, 1, 2, 1);
+-- This will create an order for customer 1, product 1, qty 2, warehouse 1
+-- If stock is not enough, it will fail and NOT create order, NOT reduce stock
 
-DELIMITER ;
+-- Example: Test concurrency
+-- Open 2 sessions at same time and run:
+-- Session 1: BEGIN; SELECT place_order(1, 1, 90, 1); -- will lock product 1
+-- Session 2: BEGIN; SELECT place_order(2, 1, 90, 1); -- will WAIT until Session 1 commits/rolls back
+-- Session 1: COMMIT;
+-- Session 2 will then see updated stock and fail if not enough - no overselling
 
--- Test transaction with FOR UPDATE
-START TRANSACTION;
-SELECT * FROM products WHERE product_id = 1 FOR UPDATE;
-UPDATE products SET stock_quantity = 45 WHERE product_id = 1;
-COMMIT;
+-- Example: Isolation levels in Postgres
+-- BEGIN ISOLATION LEVEL READ COMMITTED;
+-- SELECT * FROM products WHERE product_id = 1;
+-- COMMIT;
 
--- Show deadlock info
-SHOW ENGINE INNODB STATUS;
+-- BEGIN ISOLATION LEVEL REPEATABLE READ;
+-- SELECT * FROM products WHERE product_id = 1;
+-- COMMIT;
+
+-- Deadlock explanation:
+-- If Session A locks product 1 then tries product 2,
+-- and Session B locks product 2 then tries product 1,
+-- Postgres will detect deadlock and abort one transaction.
+-- Solution: Always lock products in same order (ORDER BY product_id).
