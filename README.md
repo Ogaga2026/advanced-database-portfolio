@@ -1,5 +1,5 @@
 # Advanced Database Portfolio - NaijaCart E-commerce
-MIT 8103 - Erhiyoma Oghenevogaga - Ogaga2026
+MIT 8103 - Erhiyoma Oghenevwogaga - Ogaga2026
 
 ## Case Study: NaijaCart
 NaijaCart na Nigerian online shopping platform for Lagos Flash Sales. E dey handle 10,000 concurrent users during Black Friday.
