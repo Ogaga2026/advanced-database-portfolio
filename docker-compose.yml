@@ -1,40 +1,27 @@
 version: '3.8'
+
 services:
-  mysql_naijacart:
-    image: mysql:8.0
-    container_name: mysql_naijacart
+  postgres:
+    image: postgres:15
+    container_name: naijacart-postgres
     environment:
-      MYSQL_ROOT_PASSWORD: ogaga2026
-      MYSQL_DATABASE: naijacart
+      POSTGRES_USER: naijacart
+      POSTGRES_PASSWORD: naijacart123
+      POSTGRES_DB: naijacart
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - mysql_data:/var/lib/mysql
-    networks:
-      - naijacart_network
-  mongodb_naijacart:
-    image: mongo:6.0
-    container_name: mongodb_naijacart
+      - postgres_data:/var/lib/postgresql/data
+      - ./portfolio-1-database-design/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+
+  mongodb:
+    image: mongo:6
+    container_name: naijacart-mongo
     ports:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
-    networks:
-      - naijacart_network
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    container_name: phpmyadmin_naijacart
-    environment:
-      PMA_HOST: mysql_naijacart
-      MYSQL_ROOT_PASSWORD: ogaga2026
-    ports:
-      - "8080:80"
-    networks:
-      - naijacart_network
+
 volumes:
-  mysql_data:
+  postgres_data:
   mongo_data:
-networks:
-  naijacart_network:
-    driver: bridge
-    name: naijacart_network
