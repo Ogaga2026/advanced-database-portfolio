@@ -1,59 +1,59 @@
-// NaijaCart - Portfolio 4 - NoSQL MongoDB
-// Erhiyoma Oghenevwogaga - Ogaga2026
-
-// Use database
-use NaijaCart;
-
 // ---------- PRODUCTS ----------
 db.products.insertMany([
   {
+    _id: 1,
     product_id: 1,
-    name: "Ankara Fabric",
-    category: "Fashion",
+    name: "Laptop Stand",
+    category: "Accessories",
     price: 25000,
-    stock_quantity: 10,
+    stock_quantity: 50,
     warehouse_id: 1
   },
   {
+    _id: 2,
     product_id: 2,
-    name: "Laptop Stand",
-    category: "Electronics",
-    price: 250000,
-    stock_quantity: 10,
-    warehouse_id: 2
-  },
-  {
-    product_id: 3,
-    name: "Sneakers",
-    category: "Fashion",
-    price: 45000,
-    stock_quantity: 5,
-    warehouse_id: 2,
-    attributes: { sizes: [40, 41, 42], colours: ["Black", "White"] }
+    name: "Wireless Mouse",
+    category: "Accessories",
+    price: 12000,
+    stock_quantity: 100,
+    warehouse_id: 1
   }
 ]);
 
 // ---------- CUSTOMERS ----------
-db.customers.insertOne({
-  customer_id: 1,
-  full_name: "Erhiyoma Oghenevwogaga",
-  email: "erhiyoma@test.com",
-  phone: "08030000000",
-  city: "Lagos",
-  state: "Lagos"
-});
+db.customers.insertMany([
+  {
+    _id: 1,
+    customer_id: 1,
+    full_name: "Ada Odi",
+    email: "ada@example.com",
+    phone: "08030000001",
+    city: "Lagos",
+    state: "Lagos State"
+  },
+  {
+    _id: 2,
+    customer_id: 2,
+    full_name: "Tunde Bakare",
+    email: "tunde@example.com",
+    phone: "08030000002",
+    city: "Abuja",
+    state: "FCT"
+  }
+]);
 
 // ---------- ORDERS ----------
-// CORRECTED: Both orders now use customer_id: 1, because only customer 1 exists
 db.orders.insertMany([
-  { order_id: 1, customer_id: 1, warehouse_id: 2, order_date: "2026-11-09", status: "completed", total_amount: 250000 },
-  { order_id: 2, customer_id: 1, warehouse_id: 1, order_date: "2026-11-09", status: "completed", total_amount: 45000 }
+  { _id: 1, order_id: 1, customer_id: 1, warehouse_id: 1, order_date: "2026-11-09", status: "pending", total_amount: 25000 },
+  { _id: 2, order_id: 2, customer_id: 2, warehouse_id: 1, order_date: "2026-11-09", status: "pending", total_amount: 12000 },
+  { _id: 3, order_id: 3, customer_id: 1, warehouse_id: 2, order_date: "2026-11-09", status: "pending", total_amount: 25000 }
 ]);
 
 // ---------- ORDER ITEMS ----------
 db.order_items.insertMany([
-  { order_item_id: 1, order_id: 1, product_id: 2, quantity: 1, unit_price: 250000 },
-  { order_item_id: 2, order_id: 2, product_id: 3, quantity: 1, unit_price: 45000 }
+  { _id: 1, order_item_id: 1, order_id: 1, product_id: 1, quantity: 1, unit_price: 25000 },
+  { _id: 2, order_item_id: 2, order_id: 2, product_id: 2, quantity: 1, unit_price: 12000 },
+  { _id: 3, order_item_id: 3, order_id: 3, product_id: 1, quantity: 1, unit_price: 25000 }
 ]);
 
 // ---------- CORRECT AGGREGATION - Total Sales Per Category ----------
@@ -82,11 +82,11 @@ db.order_items.aggregate([
 ]);
 
 // Expected Result:
-// { _id: "Electronics", total_sales: 250000, total_items_sold: 1 }
-// { _id: "Fashion", total_sales: 45000, total_items_sold: 1 }
-
+// { _id: "Accessories", total_sales: 62000, total_items_sold: 3 }
+//
 // ---------- DESIGN DECISION ----------
-// Why MongoDB fits catalog: Product catalog has flexible attributes.
-// Sneakers has sizes and colours, Laptop Stand does not.
-// In MongoDB, each document can have different fields.
+// Why MongoDB fits catalog: Product documents can carry different
+// optional fields without schema change. E.g. Laptop Stand could add
+// { attributes: { material: "Aluminium", adjustable: true } } while
+// Wireless Mouse adds { attributes: { battery: "AA", wireless_range_m: 10 } }.
 // In PostgreSQL, we would need extra tables or NULL columns for this.
