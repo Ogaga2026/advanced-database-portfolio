@@ -1,27 +1,40 @@
-# Portfolio 5 - Distributed & Cloud - NaijaCart
-MIT 8103 - Erhiyoma Oghenevwogaga - Ogaga2026
+// NaijaCart - Portfolio 5 - Distributed / Cloud - PROPOSED
+// Erhiyoma Oghenevwogaga - Ogaga2026
+// Status: PROPOSED, NOT tested. This is a design proposal only.
+// Goal: Show how NaijaCart COULD scale with a replica set.
 
-## IMPORTANT - Read This First
+const config = {
+  replicaSetName: "naijacartRS",
+  members: [
+    { host: "mongo-primary:27017", priority: 2 },
+    { host: "mongo-secondary-1:27017", priority: 1 },
+    { host: "mongo-secondary-2:27017", priority: 1 }
+  ],
+  writeConcern: { w: "majority", j: true },
+  readPreference: "primaryPreferred"
+};
 
-This section is a PROPOSED architecture, NOT tested with 3-node replica set in this repo.
+// PROPOSED failover behaviour
+// If primary fails, secondaries hold an election.
+// One secondary becomes new primary.
+// This AIMS TO REDUCE data loss, it does NOT guarantee 100% no-data-loss.
+// With w: majority, acknowledged writes are more likely to survive,
+// but unacknowledged writes could still be lost during failover.
 
-Docker Compose in this repo runs 1 MongoDB instance (mongo:6) for development. It does NOT run 3 replica members.
+function getConnectionString(cfg) {
+  const hosts = cfg.members.map(function(m) { return m.host; }).join(",");
+  return "mongodb://" + hosts + "/naijacart?replicaSet=" + cfg.replicaSetName;
+}
 
-Full 3-node replica + sharding infrastructure is NOT configured in docker-compose.yml in this repo. This is design proposal for production.
+function explainSharding() {
+  // PROPOSED sharding idea - not implemented
+  // Shard key idea: warehouse_id
+  // Reason: Orders are grouped by warehouse, so queries by warehouse stay on one shard.
+  // This is a proposal only.
+  return "Proposed shard key: warehouse_id";
+}
 
-## Proposed Replica Set
-
-Name: `naijacartRS`
-
-- Lagos - Primary - handles writes
-- Abuja - Secondary - handles reads, takes over if Lagos down
-- Port Harcourt - Hidden Backup - for backup only, no reads
-
-If Lagos down, Abuja becomes Primary automatically. No data loss because writeConcern is majority.
-
-## Proposed Sharding
-
-Shard key for products:
-
-```javascript
-sh.shardCollection("naijacart.products", { category: 1, warehouse_id: 1 })
+console.log("Replica Set:", config.replicaSetName);
+console.log("Connection:", getConnectionString(config));
+console.log(explainSharding());
+console.log("Status: PROPOSED - not tested in this portfolio");
