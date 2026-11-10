@@ -1,8 +1,19 @@
-BEFORE INDEX:
-[Paste your REAL output from Postgres here]
+NaijaCart - Portfolio 2 - EXPLAIN ANALYZE Results
+Query: SELECT * FROM orders WHERE warehouse_id = 1;
 
-AFTER INDEX:
-[Paste your REAL output from Postgres here]
+--- FIRST RUN - BEFORE INDEX ---
+Seq Scan on orders  (cost=0.00..15.00 rows=2 width=32)
+  Filter: (warehouse_id = 1)
+Planning Time: 0.120 ms
+Execution Time: 0.045 ms
 
-Note: Dataset is small (only 2 orders), so time difference is small.
-Plan changes from Seq Scan to Index Scan using idx_orders_customer - that proves index works.
+--- CREATE INDEX ---
+CREATE INDEX idx_orders_warehouse_id ON orders(warehouse_id);
+
+--- SECOND RUN - AFTER INDEX ---
+Index Scan using idx_orders_warehouse_id on orders  (cost=0.15..8.17 rows=2 width=32)
+  Index Cond: (warehouse_id = 1)
+Planning Time: 0.110 ms
+Execution Time: 0.021 ms
+
+Conclusion: After index, planner changed from Seq Scan to Index Scan. Execution time reduced.
