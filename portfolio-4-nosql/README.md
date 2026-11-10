@@ -15,4 +15,4 @@
 Note: Earlier version wrongly said warehouses was a Mongo collection. Warehouses is only in PostgreSQL. Corrected to match nosql_implementation.js.
 
 ## Consistency Rule
-Laptop Stand = 25000 in BOTH PostgreSQL AND MongoDB.
+Laptop Stand = 250000 in BOTH PostgreSQL AND MongoDB.
