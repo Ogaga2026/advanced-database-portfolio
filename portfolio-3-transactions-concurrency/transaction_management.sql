@@ -71,7 +71,7 @@ BEGIN
     RETURNING order_id INTO v_order_id;
 
     -- Create order item
-    INSERT INTO order_items (order_id, product_id, quantity, price)
+    INSERT INTO order_items (order_id, product_id, quantity, unit_price)
     VALUES (v_order_id, p_product_id, p_quantity, v_price);
 
     -- Create payment
