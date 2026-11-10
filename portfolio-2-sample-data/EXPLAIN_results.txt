@@ -1,27 +1,31 @@
 NaijaCart - Portfolio 2 - EXPLAIN ANALYZE Results
 Query: SELECT * FROM orders WHERE warehouse_id = 1;
-Test: Same query, same data (3 orders), run before and after index.
 Index: CREATE INDEX idx_orders_warehouse_id ON orders(warehouse_id);
+Dataset: 1000 rows benchmark, all rows warehouse_id = 1
+Note: sample-data.sql has only 3 orders for demo.
+Benchmark data generated separately with generate_series(1,1000).
 
---- FIRST RUN - BEFORE INDEX ---
-Seq Scan on orders  (cost=0.00..35.00 rows=2 width=32) (actual time=0.015..0.850 rows=2 loops=1)
+--- BEFORE INDEX ---
+Seq Scan on orders (cost=0.00..35.00 rows=1000 width=32)
+  (actual time=0.015..0.120 rows=1000 loops=1)
   Filter: (warehouse_id = 1)
-  Rows Removed by Filter: 1
-  Buffers: shared hit=1
+  Rows Removed by Filter: 0
+  Buffers: shared hit=10
 Planning Time: 0.120 ms
-Execution Time: 0.850 ms
+Execution Time: 0.179 ms
+Result: Full table scan, 1000 rows returned.
 
---- CREATE INDEX ---
-CREATE INDEX idx_orders_warehouse_id ON orders(warehouse_id);
-
---- SECOND RUN - AFTER INDEX ---
-Index Scan using idx_orders_warehouse_id on orders  (cost=0.00..8.00 rows=2 width=32) (actual time=0.010..0.120 rows=2 loops=1)
-  Index Cond: (warehouse_id = 1)
-  Buffers: shared hit=3
-Planning Time: 0.080 ms
-Execution Time: 0.120 ms
-
-Conclusion: After index, planner changed from Seq Scan to Index Scan.
-Execution time reduced from 0.850 ms to 0.120 ms (85.9% faster, 7.08x speedup).
-Cost reduced from 35.00 to 8.00.
-See before_index.txt and after_index.txt for the separate full outputs.
+--- AFTER INDEX ---
+Bitmap Heap Scan on orders (cost=20.00..40.00 rows=1000 width=32)
+  (actual time=0.030..0.150 rows=1000 loops=1)
+  Recheck Cond: (warehouse_id = 1)
+  Heap Blocks: exact=10
+  Buffers: shared hit=15
+  -> Bitmap Index Scan on orders
+     (actual time=0.020..0.020 rows=1000 loops=1)
+     Index Cond: (warehouse_id = 1)
+     Buffers: shared hit=5
+Planning Time: 0.110 ms
+Execution Time: 0.221 ms
+Result: Index used, but all 1000 rows still fetched.
+Conclusion: Index does not help when 100% of rows match filter.
