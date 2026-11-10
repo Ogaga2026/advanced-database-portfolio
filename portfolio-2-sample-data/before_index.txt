@@ -1,0 +1,6 @@
+EXPLAIN ANALYZE SELECT * FROM orders WHERE warehouse_id = 1;
+
+Result: Seq Scan on orders (cost=0.00..35.00 rows=2)
+Planning Time: 0.120 ms
+Execution Time: 0.850 ms
+Note: Full table scan - slow because no index on warehouse_id
