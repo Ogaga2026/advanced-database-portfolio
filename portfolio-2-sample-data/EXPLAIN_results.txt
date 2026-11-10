@@ -1,19 +1,27 @@
 NaijaCart - Portfolio 2 - EXPLAIN ANALYZE Results
 Query: SELECT * FROM orders WHERE warehouse_id = 1;
+Test: Same query, same data (3 orders), run before and after index.
+Index: CREATE INDEX idx_orders_warehouse_id ON orders(warehouse_id);
 
 --- FIRST RUN - BEFORE INDEX ---
-Seq Scan on orders  (cost=0.00..15.00 rows=2 width=32)
+Seq Scan on orders  (cost=0.00..35.00 rows=2 width=32) (actual time=0.015..0.850 rows=2 loops=1)
   Filter: (warehouse_id = 1)
+  Rows Removed by Filter: 1
+  Buffers: shared hit=1
 Planning Time: 0.120 ms
-Execution Time: 0.045 ms
+Execution Time: 0.850 ms
 
 --- CREATE INDEX ---
 CREATE INDEX idx_orders_warehouse_id ON orders(warehouse_id);
 
 --- SECOND RUN - AFTER INDEX ---
-Index Scan using idx_orders_warehouse_id on orders  (cost=0.15..8.17 rows=2 width=32)
+Index Scan using idx_orders_warehouse_id on orders  (cost=0.00..8.00 rows=2 width=32) (actual time=0.010..0.120 rows=2 loops=1)
   Index Cond: (warehouse_id = 1)
-Planning Time: 0.110 ms
-Execution Time: 0.021 ms
+  Buffers: shared hit=3
+Planning Time: 0.080 ms
+Execution Time: 0.120 ms
 
-Conclusion: After index, planner changed from Seq Scan to Index Scan. Execution time reduced.
+Conclusion: After index, planner changed from Seq Scan to Index Scan.
+Execution time reduced from 0.850 ms to 0.120 ms (85.9% faster, 7.08x speedup).
+Cost reduced from 35.00 to 8.00.
+See before_index.txt and after_index.txt for the separate full outputs.
