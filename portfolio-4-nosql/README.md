@@ -7,10 +7,12 @@
 - `README.md` - this file
 
 ## Collections - 4 collections, matches code exactly
-1. `products`
+1. `warehuse`
 2. `customers`
-3. `orders`
-4. `order_items`
+3. 'products`
+4. `orders`
+5. `order_items`
+6. `payments`
 
 Note: Earlier version wrongly said warehouses was a Mongo collection. Warehouses is only in PostgreSQL. Corrected nosql_implementation.js.
 
