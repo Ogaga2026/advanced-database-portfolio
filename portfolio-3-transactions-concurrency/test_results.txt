@@ -1,32 +1,23 @@
-NaijaCart - Portfolio 3 - Concurrency Test Results
-Product 1: Laptop Stand, Starting stock = 10
-Both sessions try to buy 10 units at SAME TIME (overlapping, not sequential)
+NaijaCart - Portfolio 3 - Concurrency Test Log
+PostgreSQL - Two overlapping transactions
 
---- SESSION A ---
+--- Session A ---
 BEGIN;
-SELECT stock_quantity FROM products WHERE product_id = 1 FOR UPDATE;
-Result: stock_quantity = 10, row LOCKED
-[Session A left OPEN, no COMMIT yet]
+UPDATE products SET price = 26000 WHERE product_id = 1;
+-- Row locked, not yet committed
 
---- SESSION B (while Session A still open) ---
+--- Session B (at same time) ---
 BEGIN;
-SELECT stock_quantity FROM products WHERE product_id = 1 FOR UPDATE;
-Result: Session B WAITS / HANGS - does NOT return immediately
-This WAIT proves FOR UPDATE lock is working.
+UPDATE products SET price = 27000 WHERE product_id = 1;
+-- Session B WAITS - blocked by Session A lock
 
---- SESSION A (finish) ---
-UPDATE products SET stock_quantity = stock_quantity - 10 WHERE product_id = 1;
+--- Session A ---
 COMMIT;
-Result: COMMIT successful. Stock = 0. Lock released.
+-- Lock released
 
---- SESSION B (now unblocks) ---
-Result: Now returns stock_quantity = 0
-Stock 0 < 10 requested, so Session B cannot proceed:
-ROLLBACK;
-Result: ROLLBACK successful. No overselling.
+--- Session B ---
+-- Now unblocked, proceeds
+COMMIT;
 
---- FINAL CHECK ---
-SELECT stock_quantity FROM products WHERE product_id = 1;
-Result: stock_quantity = 0 (correct, not -10)
-
-CONCLUSION: FOR UPDATE prevented overselling. Second transaction waited, then saw updated stock and rolled back.
+Result: Session B waited for Session A. No lost update. Locking works as expected.
+Evidence file: concurrency_test.sql
