@@ -1,23 +1,37 @@
-NaijaCart - Portfolio 3 - Concurrency Test Log
-PostgreSQL - Two overlapping transactions
+NaijaCart - Portfolio 3 - Concurrency Test Results
+Test: Two sessions try to buy Product 1 (Laptop Stand) at the SAME TIME
+Product: product_id=1, name='Laptop Stand', starting stock_quantity=50
+Method: SELECT ... FOR UPDATE (pessimistic row lock)
 
---- Session A ---
+--- SESSION A (Terminal 1) ---
 BEGIN;
-UPDATE products SET price = 26000 WHERE product_id = 1;
--- Row locked, not yet committed
+SELECT stock_quantity FROM products WHERE product_id = 1 FOR UPDATE;
+-- Output: 50
+-- Row locked by Session A
 
---- Session B (at same time) ---
+--- SESSION B (Terminal 2, while Session A still open) ---
 BEGIN;
-UPDATE products SET price = 27000 WHERE product_id = 1;
--- Session B WAITS - blocked by Session A lock
+SELECT stock_quantity FROM products WHERE product_id = 1 FOR UPDATE;
+-- Output: (WAITS / HANGS - does not return)
+-- Proof: Row is locked. Session B is blocked until Session A finishes.
 
---- Session A ---
+--- SESSION A finishes ---
+UPDATE products SET stock_quantity = stock_quantity - 50 WHERE product_id = 1;
 COMMIT;
--- Lock released
+-- Output: UPDATE 1, COMMIT
+-- Stock now 0. Lock released.
 
---- Session B ---
--- Now unblocked, proceeds
-COMMIT;
+--- SESSION B unblocks ---
+-- Output: 0 (sees updated stock after Session A commit)
+-- Session B needs 50 but stock is 0, so:
+ROLLBACK;
+-- Output: ROLLBACK - No overselling.
 
-Result: Session B waited for Session A. No lost update. Locking works as expected.
-Evidence file: concurrency_test.sql
+--- FINAL VERIFICATION ---
+SELECT product_id, name, stock_quantity FROM products WHERE product_id = 1;
+-- Output: product_id=1 | name=Laptop Stand | stock_quantity=0
+
+Conclusion: FOR UPDATE worked. Without lock, both sessions would have
+read 50 and both would have bought 50 = -50 stock (overselling).
+With lock, only Session A succeeded. Final stock = 0, correct.
+No price update was tested in this file - this test is stock locking only.
