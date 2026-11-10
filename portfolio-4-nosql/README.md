@@ -6,15 +6,13 @@
 - `mongo_results.txt` - output from running queries
 - `README.md` - this file
 
-## Collections - 4 collections, matches code exactly
-1. `warehuse`
+## Collections - 6 collections, matches code exactly
+1. `warehouses`
 2. `customers`
 3. 'products`
 4. `orders`
 5. `order_items`
 6. `payments`
-
-Note: Earlier version wrongly said warehouses was a Mongo collection. Warehouses is only in PostgreSQL. Corrected nosql_implementation.js.
 
 ## Consistency Rule
 Laptop Stand = 250000 in BOTH PostgreSQL AND MongoDB.
