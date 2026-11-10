@@ -1,62 +1,47 @@
-# Final Documentation - NaijaCart - Advanced Database Portfolio
-MIT 8103 - Erhiyoma Oghenevwogaga - Ogaga2026
+# NaijaCart - Final Documentation
+**Erhiyoma Oghenevwogaga - Ogaga2026**
+**GitHub: https://github.com/Ogaga2026/ac**
 
-## Case Study
-NaijaCart na Nigerian online shopping platform for Lagos Flash Sales. E dey handle high concurrent users during Black Friday.
+## 1. LMS Summary
 
-Postgres for money (orders, payments, inventory). MongoDB for catalog (products with different attributes, behaviour tracking).
+### What NaijaCart Is
+NaijaCart is a small e-commerce database for Nigeria. Warehouses in Lagos and Abuja, customers, products like Laptop Stand (25000), and orders.
 
-## Portfolio 1 - Schema Design
-File: `portfolio-1-database-design/relational-schema.sql`
-ER Diagram: `portfolio-1-database-design/er-diagram.jpg`
+### Portfolio 1 - Design
+PostgreSQL tables: warehouses, customers, products, orders.
+Warehouses: warehouse_id, name, city, state, capacity.
+Products: product_id, name, price.
 
-6 tables only, all in 3NF:
-- warehouses(warehouse_id PK, name, city, state, capacity)
-- customers(customer_id PK, full_name, email, phone, city, state, created_at)
-- products(product_id PK, name, category, price, stock_quantity, warehouse_id FK)
-- orders(order_id PK, customer_id FK, warehouse_id FK, order_date, status, total_amount)
-- order_items(order_item_id PK, order_id FK, product_id FK, quantity, unit_price)
-- payments(payment_id PK, order_id FK, payment_date, amount, payment_method, status)
+### Portfolio 2 - Query Optimisation
+Query: orders by warehouse_id.
+First EXPLAIN: Seq Scan. Then CREATE INDEX idx_orders_warehouse_id. Second EXPLAIN: Index Scan, faster.
+DROP INDEX IF EXISTS was run first so index did not exist before first run.
+Evidence: portfolio-2-query-optimisation/EXPLAIN_results.txt
 
-Key points:
-- order_items uses single PK order_item_id, NOT composite (order_id, product_id)
-- orders.warehouse_id is the fulfilment warehouse for that order. It can differ from products.warehouse_id.
-- No Vendors, Categories, or Shipments tables. Category is stored as text in products.
+### Portfolio 3 - Transactions
+Two overlapping transactions. Session A locks row, Session B WAITS, then proceeds after COMMIT. No lost update.
+Evidence: portfolio-3-transactions-concurrency/test_results.txt
 
-## Portfolio 2 - Sample Data & Optimisation
-File: `portfolio-2-sample-data-optimization/`
+### Portfolio 4 - MongoDB
+Collections: products, customers, orders, order_items. Matches nosql_implementation.js.
+Laptop Stand = 25000 in both databases.
+Evidence: portfolio-4-nosql-mongodb/mongo_results.txt
 
-Sample data loaded for all 6 tables. Indexes added on columns used in WHERE and JOIN: orders(customer_id), orders(warehouse_id), order_items(order_id), order_items(product_id), payments(order_id), products(warehouse_id).
+### Portfolio 5 - Distributed - PROPOSED
+Replica set proposal in distributed_implementation.js. NOT tested. Aims to reduce data loss, does NOT guarantee 100% no-data-loss.
 
-Optimisation approach: Use EXPLAIN ANALYZE to compare before and after index. Report actual plan output saved in portfolio-2 file, not assumed timings. Warehouse sales query uses orders.warehouse_id (fulfilment warehouse), not products.warehouse_id, to avoid misstating sales when fulfilment warehouse differs from product warehouse.
+### What I Learned
+Column names must match schema. Index placement matters. Evidence must be terminal output, not descriptions.
 
-## Portfolio 3 - Transactions & Concurrency
-File: `portfolio-3-transactions-concurrency/`
+## 2. Real Folders Only
+- portfolio-1-database-design/
+- portfolio-2-query-optimisation/
+- portfolio-3-transactions-concurrency/
+- portfolio-4-nosql-mongodb/
+- portfolio-5-distributed-cloud/
 
-Example: Two customers try to buy last Ankara at same time.
-Solution: `BEGIN; SELECT stock_quantity FROM products WHERE product_id = 1 FOR UPDATE; UPDATE products SET stock_quantity = stock_quantity - 1 WHERE product_id = 1; INSERT INTO orders...; INSERT INTO order_items...; COMMIT;`
-FOR UPDATE locks the product row until COMMIT, so second customer waits and sees updated stock. Prevents overselling.
-Isolation levels tested: READ COMMITTED vs REPEATABLE READ. Deadlock example included where two transactions lock products in opposite order.
+## 3. Isolation Levels
+READ COMMITTED was used. Locking behaviour is shown in test_results.txt. No separate isolation test claimed beyond this.
 
-## Portfolio 4 - NoSQL Implementation
-File: `portfolio-4-nosql-implementation/`
-
-MongoDB collections mirror the 6 relational tables but with flexible schema. Products collection uses embedded attributes: `{ name, category, price, attributes: { sizes, colours } }` - for Postgres this would need separate table.
-Prices kept consistent with Postgres sample data. Example: Laptop Stand is same price in both systems. No duplicate price for same product.
-Aggregation: Total sales per category is grouped by products.category via $lookup from order_items to products, then $group by category. It does NOT group by order status, and it does NOT double-count orders with many items - it sums quantity * unit_price per line item.
-
-## Portfolio 5 - Distributed & Cloud
-File: `portfolio-5-distributed-cloud/`
-
-Proposed architecture, NOT tested with 3-node replica set in this repo:
-- Docker Compose in this repo runs 1 MongoDB instance (mongo:6) for development. It does NOT run 3 replica members.
-- Proposed production: Replica Set naijacartRS - Lagos Primary, Abuja Secondary, Port Harcourt Hidden Backup. Lagos down -> Abuja takes over.
-- Proposed sharding: `sh.shardCollection("naijacart.products", { category: 1, warehouse_id: 1 })`
-- CAP: Orders = Consistency with writeConcern { w: "majority" }, Catalog = Availability with readPreference secondaryPreferred.
-- This section is design proposal. Full 3-node replica + sharding infrastructure is not configured in docker-compose.yml in this repo.
-
-## How To Run
-```bash
-docker-compose up -d
-# Postgres on 5432, MongoDB on 27017
-# Postgres auto-loads portfolio-1-database-design/relational-schema.sql
+## 4. AI-Use Declaration
+AI (Meta AI) was used for guidance and drafting. All SQL, JavaScript and final decisions were reviewed and edited by me, Erhiyoma Oghenevwogaga.
