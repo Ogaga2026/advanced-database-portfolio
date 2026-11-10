@@ -1,21 +1,15 @@
-NaijaCart - Portfolio 4 - MongoDB Results
-Collections: products, customers, orders, order_items
+> db.products.find()
+{ _id: 1, product_id: 1, name: "Laptop Stand", category: "Accessories", price: 25000, stock_quantity: 50, warehouse_id: 1 }
+{ _id: 2, product_id: 2, name: "Wireless Mouse", category: "Accessories", price: 12000, stock_quantity: 100, warehouse_id: 1 }
 
---- db.products.find() ---
-{ _id: 1, name: "Ankara Fabric", price: 25000, category: "Fashion" }
-{ _id: 2, name: "Laptop Stand", price: 250000, category: "Electronics" }
-{ _id: 3, name: "Sneakers", price: 45000, category: "Fashion" }
+> db.customers.find()
+{ _id: 1, customer_id: 1, full_name: "Ada Odi", email: "ada@example.com", phone: "08030000001", city: "Lagos", state: "Lagos State" }
+{ _id: 2, customer_id: 2, full_name: "Tunde Bakare", email: "tunde@example.com", phone: "08030000002", city: "Abuja", state: "FCT" }
 
---- db.customers.find() ---
-{ _id: 1, name: "Erhiyoma Oghenevwogaga", email: "erhiyoma@test.com" }
+> db.orders.find()
+{ _id: 1, order_id: 1, customer_id: 1, warehouse_id: 1, order_date: "2026-11-09", status: "pending", total_amount: 25000 }
+{ _id: 2, order_id: 2, customer_id: 2, warehouse_id: 1, order_date: "2026-11-09", status: "pending", total_amount: 12000 }
+{ _id: 3, order_id: 3, customer_id: 1, warehouse_id: 2, order_date: "2026-11-09", status: "pending", total_amount: 25000 }
 
---- db.orders.find() ---
-{ _id: 1, customer_id: 1, total_amount: 250000 }
-{ _id: 2, customer_id: 1, total_amount: 45000 }
-
---- db.order_items.aggregate() - Total Sales by Category ---
-{ _id: "Electronics", total_sales: 250000, total_items_sold: 1 }
-{ _id: "Fashion", total_sales: 45000, total_items_sold: 1 }
-
-Consistency Check: Laptop Stand = 250000 in PostgreSQL AND MongoDB - MATCHES.
-Consistency Check: Ankara Fabric = 25000 in PostgreSQL AND MongoDB - MATCHES.
+> db.order_items.aggregate([... Total Sales Per Category ...])
+{ _id: "Accessories", total_sales: 62000, total_items_sold: 3 }
