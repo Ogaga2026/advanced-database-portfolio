@@ -10,8 +10,11 @@ const config = {
     { host: "mongo-secondary-1:27017", priority: 1 },
     { host: "mongo-secondary-2:27017", priority: 1 }
   ],
+  // These values MUST be in the connection string to take effect.
+  // Keeping them only in this object does nothing.
   writeConcern: { w: "majority", j: true },
-  readPreference: "primaryPreferred"
+  readPreference: "primaryPreferred",
+  retryWrites: true
 };
 
 // PROPOSED failover behaviour
@@ -23,16 +26,23 @@ const config = {
 
 function getConnectionString(cfg) {
   const hosts = cfg.members.map(function(m) { return m.host; }).join(",");
-  return "mongodb://" + hosts + "/naijacart?replicaSet=" + cfg.replicaSetName;
+  // Include writeConcern + readPreference here, otherwise they are ignored.
+  return "mongodb://" + hosts + "/naijacart?replicaSet=" + cfg.replicaSetName
+    + "&w=majority&journal=true&readPreference=" + cfg.readPreference
+    + "&retryWrites=true";
 }
 
 function explainSharding() {
   // PROPOSED sharding idea - not implemented
-  // Shard key idea: { warehouse_id: 1, order_id: 1 } - COMPOUND
-  // Reason: warehouse_id alone has only 2 values (low cardinality).
-  // Adding order_id makes it unique and spreads orders evenly.
-  // Queries by warehouse still stay on one shard.
-  return "Proposed shard key: { warehouse_id: 1, order_id: 1 }";
+  // Proposed shard key: { warehouse_id: 1, order_id: 1 } - COMPOUND
+  // Limitation: warehouse_id alone has only 2 values (low cardinality),
+  // so this key will NOT spread evenly on its own. Adding order_id helps
+  // split chunks, but order_id is monotonic, so new writes can still
+  // hotspot on the last chunk. Queries by warehouse_id alone may still
+  // need to check more than one shard.
+  // Alternative to consider: hashed shard key on order_id, e.g. { order_id: "hashed" },
+  // which spreads writes evenly but cannot target by warehouse.
+  return "Proposed shard key: { warehouse_id: 1, order_id: 1 } - PROPOSED, NOT tested";
 }
 
 console.log("Replica Set:", config.replicaSetName);
