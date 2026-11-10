@@ -1,22 +1,18 @@
 # NaijaCart - Portfolio 4 - NoSQL MongoDB
-
 **Erhiyoma Oghenevwogaga - Ogaga2026**
 
-## What is in this folder
-- `mongodb_setup.js` - creates 4 collections and inserts sample data
-- `mongo_results.txt` - real output from running the queries
+## Files in this folder
+- `nosql_implementation.js` - main code, creates collections and inserts data
+- `mongo_results.txt` - output from running queries
 - `README.md` - this file
 
-## Collections - 4 collections only
-1. `warehouses`
+## Collections - 4 collections, matches code exactly
+1. `products`
 2. `customers`
-3. `products`
-4. `orders`
+3. `orders`
+4. `order_items`
+
+Note: Earlier version wrongly said warehouses was a Mongo collection. Warehouses is only in PostgreSQL. Corrected to match nosql_implementation.js.
 
 ## Consistency Rule
 Laptop Stand = 25000 in BOTH PostgreSQL AND MongoDB.
-Same price, same product, in both databases.
-
-## Note
-This portfolio uses 4 collections. Earlier version mentioned 6, that was an error.
-Corrected to 4 to match `mongodb_setup.js`.
