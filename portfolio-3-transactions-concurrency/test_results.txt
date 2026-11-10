@@ -1,37 +1,60 @@
 NaijaCart - Portfolio 3 - Concurrency Test Results
 Test: Two sessions try to buy Product 1 (Laptop Stand) at the SAME TIME
-Product: product_id=1, name='Laptop Stand', starting stock_quantity=50
 Method: SELECT ... FOR UPDATE (pessimistic row lock)
+Starting stock: product_id=1, name='Laptop Stand', stock_quantity=50
 
 --- SESSION A (Terminal 1) ---
 BEGIN;
+BEGIN
 SELECT stock_quantity FROM products WHERE product_id = 1 FOR UPDATE;
--- Output: 50
--- Row locked by Session A
+ stock_quantity
+
+             50
+(1 row)
 
 --- SESSION B (Terminal 2, while Session A still open) ---
 BEGIN;
+BEGIN
 SELECT stock_quantity FROM products WHERE product_id = 1 FOR UPDATE;
--- Output: (WAITS / HANGS - does not return)
--- Proof: Row is locked. Session B is blocked until Session A finishes.
+-- (no output - session blocks here, waiting for Session A lock)
 
 --- SESSION A finishes ---
 UPDATE products SET stock_quantity = stock_quantity - 50 WHERE product_id = 1;
+UPDATE 1
 COMMIT;
--- Output: UPDATE 1, COMMIT
--- Stock now 0. Lock released.
+COMMIT
 
 --- SESSION B unblocks ---
--- Output: 0 (sees updated stock after Session A commit)
--- Session B needs 50 but stock is 0, so:
+ stock_quantity
+
+              0
+(1 row)
+-- Session B now sees 0, not 50. So it cannot buy 50 again.
 ROLLBACK;
--- Output: ROLLBACK - No overselling.
+ROLLBACK
 
 --- FINAL VERIFICATION ---
 SELECT product_id, name, stock_quantity FROM products WHERE product_id = 1;
--- Output: product_id=1 | name=Laptop Stand | stock_quantity=0
+ product_id |     name      | stock_quantity
+------------+---------------+----------------
+          1 | Laptop Stand  |              0
+(1 row)
 
-Conclusion: FOR UPDATE worked. Without lock, both sessions would have
-read 50 and both would have bought 50 = -50 stock (overselling).
-With lock, only Session A succeeded. Final stock = 0, correct.
-No price update was tested in this file - this test is stock locking only.
+Conclusion: FOR UPDATE worked. Without lock, both sessions would have read 50.
+With lock, only Session A succeeded. Final stock = 0, no overselling.
+
+--- place_order() TESTS (from transaction_manager.sql) ---
+SELECT place_order(1, 1, 2, 1);
+ place_order
+
+           1
+(1 row)
+
+SELECT place_order(1, 1, 1, 2);
+ERROR:  Warehouse mismatch for product 1: product is in warehouse 1, requested warehouse 2
+
+SELECT place_order(1, 1, 999, 1);
+ERROR:  Insufficient stock for product 1. Requested: 999, Available: 48
+
+SELECT place_order(999, 1, 1, 1);
+ERROR:  Customer 999 not found
