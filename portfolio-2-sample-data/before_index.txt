@@ -1,6 +1,10 @@
 EXPLAIN ANALYZE SELECT * FROM orders WHERE warehouse_id = 1;
 
-Result: Seq Scan on orders (cost=0.00..35.00 rows=2)
+Seq Scan on orders  (cost=0.00..35.00 rows=2 width=32) (actual time=0.015..0.850 rows=2 loops=1)
+  Filter: (warehouse_id = 1)
+  Rows Removed by Filter: 1
+  Buffers: shared hit=1
 Planning Time: 0.120 ms
 Execution Time: 0.850 ms
+
 Note: Full table scan - slow because no index on warehouse_id
