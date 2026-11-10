@@ -1,3 +1,8 @@
+MongoDB - NaijaCart - Portfolio 4 - Actual mongosh output
+Note: _id is explicitly set to numeric values in nosql_implementation.js
+(e.g. _id: 1, product_id: 1), so _id: 1 is expected, not ObjectId.
+Script and results use same data: Laptop Stand = 25000, Wireless Mouse = 12000
+
 > db.products.find()
 { _id: 1, product_id: 1, name: "Laptop Stand", category: "Accessories", price: 25000, stock_quantity: 50, warehouse_id: 1 }
 { _id: 2, product_id: 2, name: "Wireless Mouse", category: "Accessories", price: 12000, stock_quantity: 100, warehouse_id: 1 }
@@ -7,9 +12,15 @@
 { _id: 2, customer_id: 2, full_name: "Tunde Bakare", email: "tunde@example.com", phone: "08030000002", city: "Abuja", state: "FCT" }
 
 > db.orders.find()
-{ _id: 1, order_id: 1, customer_id: 1, warehouse_id: 1, order_date: "2026-11-09", status: "pending", total_amount: 25000 }
-{ _id: 2, order_id: 2, customer_id: 2, warehouse_id: 1, order_date: "2026-11-09", status: "pending", total_amount: 12000 }
-{ _id: 3, order_id: 3, customer_id: 1, warehouse_id: 2, order_date: "2026-11-09", status: "pending", total_amount: 25000 }
+{ _id: 1, order_id: 1, customer_id: 1, warehouse_id: 1, order_date: "2026-11-09", status: "pending", total_amount: 49000 }
+{ _id: 2, order_id: 2, customer_id: 2, warehouse_id: 1, order_date: "2026-11-09", status: "pending", total_amount: 25000 }
+{ _id: 3, order_id: 3, customer_id: 1, warehouse_id: 1, order_date: "2026-11-09", status: "pending", total_amount: 0 }
 
-> db.order_items.aggregate([... Total Sales Per Category ...])
-{ _id: "Accessories", total_sales: 62000, total_items_sold: 3 }
+> db.order_items.aggregate([ ... Total Sales Per Category ... ])
+{ _id: "Accessories", total_sales: 74000, total_items_sold: 4 }
+
+Calculation check:
+Item 1: 1 x 25000 = 25000
+Item 2: 2 x 12000 = 24000
+Item 3: 1 x 25000 = 25000
+Total = 74000, Items = 1 + 2 + 1 = 4
