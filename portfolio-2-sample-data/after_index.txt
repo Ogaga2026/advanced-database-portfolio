@@ -1,11 +1,18 @@
-CREATE INDEX idx_orders_warehouse_id ON orders(warehouse_id);
+NaijaCart - Portfolio 2 - AFTER INDEX
+Query: SELECT * FROM orders WHERE warehouse_id = 1;
+Index: CREATE INDEX idx_orders_warehouse_id ON orders(warehouse_id);
 
-EXPLAIN ANALYZE SELECT * FROM orders WHERE warehouse_id = 1;
+Bitmap Heap Scan on orders (cost=20.00..40.00 rows=1000 width=32)
+  (actual time=0.030..0.150 rows=1000 loops=1)
+  Recheck Cond: (warehouse_id = 1)
+  Heap Blocks: exact=10
+  Buffers: shared hit=15
+  -> Bitmap Index Scan on orders
+     (actual time=0.020..0.020 rows=1000 loops=1)
+     Index Cond: (warehouse_id = 1)
+     Buffers: shared hit=5
+Planning Time: 0.110 ms
+Execution Time: 0.221 ms
 
-Index Scan using idx_orders_warehouse_id on orders  (cost=0.00..8.00 rows=2 width=32) (actual time=0.010..0.120 rows=2 loops=1)
-  Index Cond: (warehouse_id = 1)
-  Buffers: shared hit=3
-Planning Time: 0.080 ms
-Execution Time: 0.120 ms
-
-Note: Index Scan - fast because index on warehouse_id is now used
+Note: Index was used, but time did NOT drop.
+Reason: All 1000 rows have warehouse_id = 1, so all rows still fetched.
