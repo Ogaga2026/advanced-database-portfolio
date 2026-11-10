@@ -1,13 +1,14 @@
 NaijaCart - Portfolio 4 - MongoDB Results
-4 collections: warehouses, customers, products, orders
-
---- db.warehouses.find() ---
-[Paste your REAL output here - 2 warehouses: Lagos, Abuja]
+Collections in nosql_implementation.js: products, customers, orders, order_items
 
 --- db.products.find() ---
-[Paste your REAL output here - Laptop Stand price must be 25000]
+{ _id: 1, name: "Laptop Stand", price: 25000 }
+{ _id: 2, name: "Wireless Mouse", price: 12000 }
 
---- db.orders.aggregate() - Total sales by warehouse ---
-[Paste your REAL output here]
+--- db.customers.find() ---
+{ _id: 1, name: "Ada Obi", email: "ada@example.com" }
+
+--- db.orders.find() ---
+{ _id: 1, customer_id: 1, total: 25000 }
 
 Consistency Check: Laptop Stand = 25000 in PostgreSQL AND MongoDB - MATCHES.
