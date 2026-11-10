@@ -15,5 +15,4 @@
 6. `payments`
 
 ## Consistency Rule
-Laptop Stand = 250000 in BOTH PostgreSQL AND MongoDB.
-Ankara Fabric = 25000 in BOTH PostgreSQL AND MongoDB.
+Laptop Stand = 25000 in BOTH PostgreSQL AND MongoDB. Wireless Mouse = 12000 in BOTH PostgreSQL AND MongoDB. No Ankara Fabric.
