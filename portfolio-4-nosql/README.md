@@ -12,7 +12,8 @@
 3. `orders`
 4. `order_items`
 
-Note: Earlier version wrongly said warehouses was a Mongo collection. Warehouses is only in PostgreSQL. Corrected to match nosql_implementation.js.
+Note: Earlier version wrongly said warehouses was a Mongo collection. Warehouses is only in PostgreSQL. Corrected nosql_implementation.js.
 
 ## Consistency Rule
 Laptop Stand = 250000 in BOTH PostgreSQL AND MongoDB.
+Ankara Fabric = 25000 in BOTH PostgreSQL AND MongoDB.
