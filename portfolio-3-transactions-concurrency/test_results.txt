@@ -1,0 +1,32 @@
+NaijaCart - Portfolio 3 - Concurrency Test Results
+Product 1: Laptop Stand, Starting stock = 10
+Both sessions try to buy 10 units at SAME TIME (overlapping, not sequential)
+
+--- SESSION A ---
+BEGIN;
+SELECT stock_quantity FROM products WHERE product_id = 1 FOR UPDATE;
+Result: stock_quantity = 10, row LOCKED
+[Session A left OPEN, no COMMIT yet]
+
+--- SESSION B (while Session A still open) ---
+BEGIN;
+SELECT stock_quantity FROM products WHERE product_id = 1 FOR UPDATE;
+Result: Session B WAITS / HANGS - does NOT return immediately
+This WAIT proves FOR UPDATE lock is working.
+
+--- SESSION A (finish) ---
+UPDATE products SET stock_quantity = stock_quantity - 10 WHERE product_id = 1;
+COMMIT;
+Result: COMMIT successful. Stock = 0. Lock released.
+
+--- SESSION B (now unblocks) ---
+Result: Now returns stock_quantity = 0
+Stock 0 < 10 requested, so Session B cannot proceed:
+ROLLBACK;
+Result: ROLLBACK successful. No overselling.
+
+--- FINAL CHECK ---
+SELECT stock_quantity FROM products WHERE product_id = 1;
+Result: stock_quantity = 0 (correct, not -10)
+
+CONCLUSION: FOR UPDATE prevented overselling. Second transaction waited, then saw updated stock and rolled back.
