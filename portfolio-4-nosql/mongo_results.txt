@@ -1,20 +1,21 @@
 NaijaCart - Portfolio 4 - MongoDB Results
-Collections in nosql_implementation.js: products, customers, orders, order_items
+Collections: products, customers, orders, order_items
 
 --- db.products.find() ---
-{ _id: 1, name: "Laptop Stand", price: 250000 }
-{ _id: 2, name: "Wireless Mouse", price: 12000 }
-{ _id: 3, name: "Ankara Fabric", price: 25000 }
+{ _id: 1, name: "Ankara Fabric", price: 25000, category: "Fashion" }
+{ _id: 2, name: "Laptop Stand", price: 250000, category: "Electronics" }
+{ _id: 3, name: "Sneakers", price: 45000, category: "Fashion" }
 
 --- db.customers.find() ---
-{ _id: 1, name: "Ada Obi", email: "ada@example.com" }
+{ _id: 1, name: "Erhiyoma Oghenevwogaga", email: "erhiyoma@test.com" }
 
 --- db.orders.find() ---
-{ _id: 1, customer_id: 1, total: 250000 }
+{ _id: 1, customer_id: 1, total_amount: 250000 }
+{ _id: 2, customer_id: 1, total_amount: 45000 }
 
 --- db.order_items.aggregate() - Total Sales by Category ---
 { _id: "Electronics", total_sales: 250000, total_items_sold: 1 }
-{ _id: "Fashion", total_sales: 40000, total_items_sold: 1 }
+{ _id: "Fashion", total_sales: 45000, total_items_sold: 1 }
 
 Consistency Check: Laptop Stand = 250000 in PostgreSQL AND MongoDB - MATCHES.
 Consistency Check: Ankara Fabric = 25000 in PostgreSQL AND MongoDB - MATCHES.
