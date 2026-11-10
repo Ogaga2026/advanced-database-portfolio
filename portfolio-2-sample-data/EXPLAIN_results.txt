@@ -1,0 +1,8 @@
+BEFORE INDEX:
+[Paste your REAL output from Postgres here]
+
+AFTER INDEX:
+[Paste your REAL output from Postgres here]
+
+Note: Dataset is small (only 2 orders), so time difference is small.
+Plan changes from Seq Scan to Index Scan using idx_orders_customer - that proves index works.
