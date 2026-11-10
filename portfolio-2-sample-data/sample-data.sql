@@ -18,7 +18,7 @@ INSERT INTO products (product_id, name, category, price, stock_quantity, warehou
 INSERT INTO orders (order_id, customer_id, warehouse_id, status, total_amount) VALUES
 (1, 1, 1, 'pending', 25000),
 (2, 2, 1, 'pending', 12000),
-(3, 1, 2, 'pending', 25000);
+(3, 1, 1, 'pending', 25000);
 
 INSERT INTO order_items (order_item_id, order_id, product_id, quantity, unit_price) VALUES
 (1, 1, 1, 1, 25000),
@@ -44,3 +44,11 @@ SELECT w.name AS warehouse_name, SUM(o.total_amount) AS total_sales
 FROM orders o
 JOIN warehouses w ON o.warehouse_id = w.warehouse_id
 GROUP BY w.name;
+
+-- Synchronize sequences after explicit IDs
+SELECT setval('warehouses_warehouse_id_seq', (SELECT MAX(warehouse_id) FROM warehouses));
+SELECT setval('customers_customer_id_seq', (SELECT MAX(customer_id) FROM customers));
+SELECT setval('products_product_id_seq', (SELECT MAX(product_id) FROM products));
+SELECT setval('orders_order_id_seq', (SELECT MAX(order_id) FROM orders));
+SELECT setval('order_items_order_item_id_seq', (SELECT MAX(order_item_id) FROM order_items));
+SELECT setval('payments_payment_id_seq', (SELECT MAX(payment_id) FROM payments));
