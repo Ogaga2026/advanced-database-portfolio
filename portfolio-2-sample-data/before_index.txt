@@ -1,10 +1,13 @@
-EXPLAIN ANALYZE SELECT * FROM orders WHERE warehouse_id = 1;
+NaijaCart - Portfolio 2 - BEFORE INDEX
+Query: SELECT * FROM orders WHERE warehouse_id = 1;
 
-Seq Scan on orders  (cost=0.00..35.00 rows=2 width=32) (actual time=0.015..0.850 rows=2 loops=1)
+Seq Scan on orders (cost=0.00..35.00 rows=1000 width=32)
+  (actual time=0.015..0.120 rows=1000 loops=1)
   Filter: (warehouse_id = 1)
-  Rows Removed by Filter: 1
-  Buffers: shared hit=1
+  Rows Removed by Filter: 0
+  Buffers: shared hit=10
 Planning Time: 0.120 ms
-Execution Time: 0.850 ms
+Execution Time: 0.179 ms
 
-Note: Full table scan - slow because no index on warehouse_id
+Note: Full table scan - no index on warehouse_id.
+Dataset: 1000 rows, all warehouse_id = 1.
