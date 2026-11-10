@@ -1,46 +1,22 @@
-# Portfolio 4 - NoSQL Implementation - NaijaCart
-MIT 8103 - Erhiyoma Oghenevwogaga - Ogaga2026
+# NaijaCart - Portfolio 4 - NoSQL MongoDB
 
-## Why MongoDB For NaijaCart?
+**Erhiyoma Oghenevwogaga - Ogaga2026**
 
-Postgres dey for money - orders, payments, inventory. MongoDB dey for catalog.
+## What is in this folder
+- `mongodb_setup.js` - creates 4 collections and inserts sample data
+- `mongo_results.txt` - real output from running the queries
+- `README.md` - this file
 
-Why? Because products get different attributes:
-- Ankara Fabric get sizes and colours
-- Laptop Stand get material and adjustable
-- Sneakers get sizes and colours
+## Collections - 4 collections only
+1. `warehouses`
+2. `customers`
+3. `products`
+4. `orders`
 
-For Postgres, this would need separate table. For MongoDB, we just embed `attributes` inside product document. No extra join.
+## Consistency Rule
+Laptop Stand = 25000 in BOTH PostgreSQL AND MongoDB.
+Same price, same product, in both databases.
 
-## Collections
-
-Collections mirror the 6 SQL tables:
-- `products` - with embedded `attributes`
-- `customers`
-- `orders`
-- `order_items`
-- `warehouses`
-- `payments`
-
-## Price Consistency - IMPORTANT
-
-Prices MUST match Postgres sample data. No duplicate price for same product.
-
-- Laptop Stand = **25000 in BOTH Postgres and MongoDB**
-- Ankara Fabric = 25000 in both
-- Sneakers = 45000 in both
-
-If you see Laptop Stand as 35000 in MongoDB, na mistake. Fix am to 25000.
-
-## Example Product Document
-
-```javascript
-{
-  product_id: 2,
-  name: "Laptop Stand",
-  category: "Electronics",
-  price: 25000,
-  stock_quantity: 10,
-  warehouse_id: 1,
-  attributes: { material: "Aluminium", adjustable: true }
-}
+## Note
+This portfolio uses 4 collections. Earlier version mentioned 6, that was an error.
+Corrected to 4 to match `mongodb_setup.js`.
